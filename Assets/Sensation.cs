@@ -5,21 +5,22 @@ using System.Net;
 using System.Net.Sockets;
 using ProtoBuf;
 
-public class Proto : MonoBehaviour {
+public class Sensation : MonoBehaviour {
 	private TcpClient client;
 	private NetworkStream networkStream;
+	
+	[SerializeField] 
+	string ServerName = "sensationdriver.local";
 	
 	void Awake() {
 		this.enabled = InitClient();
 	}
 	
-	private bool InitClient() {
-		string serverName = "sensationdriver.local";	// TODO make this a property with default value
-		
+	private bool InitClient() {		
 		try {
-            IPAddress[] serverIps = Dns.GetHostEntry(serverName).AddressList;
+            IPAddress[] serverIps = Dns.GetHostEntry(ServerName).AddressList;
             if (serverIps.Length < 1) {
-				Debug.LogError("Unable to find IP for server " + serverName);
+				Debug.LogError("Unable to find IP for server " + ServerName);
 				return false;
 			}
 			
@@ -43,9 +44,19 @@ public class Proto : MonoBehaviour {
 	
 	void Update () {
 		var command = new Command();
-		command.ActorIndex = 1;
-		command.Intensity = 0.4f;
+		command.ActorIndex = 0;		
 		command.TargetRegion = Command.Region.LeftForearm;
+		
+		RaycastHit hitInfo;
+		float maxDistance = 10f;
+		LayerMask layerMask = -1;
+		if (Physics.Raycast(transform.position, Vector3.down, out hitInfo, maxDistance, layerMask)) {
+			command.Intensity = hitInfo.distance / maxDistance;
+			Debug.Log("hit something " + command.Intensity);
+		} else {
+			command.Intensity = 0;
+			Debug.Log("didn't hit anything");
+		}
 		SendViaSocket(command);
 	}
 	
