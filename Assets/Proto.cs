@@ -6,55 +6,60 @@ using System.Net.Sockets;
 using ProtoBuf;
 
 public class Proto : MonoBehaviour {
-
-	// Use this for initialization
-	void Start () {
-		Debug.Log("called");
-		var command = new Command();
-		command.ActorIndex = 1;
-		command.Intensity = 0.3f;
-		command.TargetRegion = Command.Region.LeftForearm;
+	private TcpClient client;
+	private NetworkStream networkStream;
+	
+	void Awake() {
+		this.enabled = InitClient();
+	}
+	
+	private bool InitClient() {
+		string serverName = "sensationdriver.local";	// TODO make this a property with default value
 		
 		try {
-            IPAddress[] serverIps = Dns.GetHostEntry("sensationdriver.local").AddressList;
-            if (serverIps.Length > 0) {
-				SendViaSocket(command, serverIps[0]);
-			}
-        } catch(Exception e) {
-            Debug.Log(e);
-        }
-		
-		// WriteFile(command);
-		
-	}
-	
-	void SendViaSocket(Command command, IPAddress serverIp) {
-		Debug.Log("CLIENT: Opening connection...");
-		using (TcpClient client = new TcpClient())
-		{
-			client.Connect(new IPEndPoint(serverIp, 10000));
-			using (NetworkStream stream = client.GetStream())
-			{
-				Debug.Log("CLIENT: Got connection; sending data...");
-				Serializer.SerializeWithLengthPrefix(stream, command, PrefixStyle.Fixed32BigEndian);
-				
-				Console.WriteLine("CLIENT: Closing...");
-				stream.Close();
+            IPAddress[] serverIps = Dns.GetHostEntry(serverName).AddressList;
+            if (serverIps.Length < 1) {
+				Debug.LogError("Unable to find IP for server " + serverName);
+				return false;
 			}
 			
-			client.Close();
-		}
+			client = new TcpClient();
+			client.Connect(new IPEndPoint(serverIps[0], 10000));
+			networkStream = client.GetStream();
+        } catch(Exception e) {
+            Debug.LogError(e);
+			return false;
+        }
+		return true;
+	}
+
+	void OnDestroy() {
+		networkStream.Close();
+		client.Close();
 	}
 	
-	void WriteFile(Command command) {
-    	using (var file = File.Create("command.bin"))
-		{
-        	Serializer.Serialize(file, command);
-    	}
+	void Start() {
 	}
 	
-	// Update is called once per frame
 	void Update () {
+		var command = new Command();
+		command.ActorIndex = 1;
+		command.Intensity = 0.4f;
+		command.TargetRegion = Command.Region.LeftForearm;
+		SendViaSocket(command);
+	}
 	
+	void SendViaSocket(Command command) {
+		if (!client.Connected) {
+			Debug.LogError("Unable to send command - client disconnected");
+			return;
+		}
+		
+		if (!networkStream.CanWrite) {
+			Debug.LogError("Can't write to network stream");
+			return;
+		}
+		
+		Serializer.SerializeWithLengthPrefix(networkStream, command, PrefixStyle.Fixed32BigEndian);
 	}
 }
