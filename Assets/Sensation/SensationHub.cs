@@ -9,7 +9,7 @@ public class SensationHub : MonoBehaviour {
 		SensationClient.Instance.Connect(sensationDriverNetworkName);
     }
 	
-	void Destroy() {
+	void OnDestroy() {
 		SensationClient.Instance.Disconnect();
 	}
 }
