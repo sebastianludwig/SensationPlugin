@@ -3,7 +3,7 @@ using System.Collections;
 
 public class SensationProbe : MonoBehaviour {
 	public enum OutOfReachValue { Off, EvaluateZero, EvaluateOne }
-	public enum UpdateMode { Continues, OnChange }
+	public enum UpdateMode { Continuous, OnChange }
 	
 	static Keyframe[] initialIntensityKeyframes;
 	static SensationProbe() {
@@ -40,10 +40,6 @@ public class SensationProbe : MonoBehaviour {
 	
 	float previousIntensity = float.NaN;
 	
-	void Start() {
-		direction.Normalize();
-	}
-	
 	void Update() {
 		float newIntensity = float.NaN;
 		
@@ -67,11 +63,9 @@ public class SensationProbe : MonoBehaviour {
 		}
 		
 		if (updateMode == UpdateMode.OnChange && Mathf.Abs(newIntensity - previousIntensity) < 0.001) {
-			Debug.Log("same same");
 			return;
 		}
 		
-		Debug.Log("but different");
 		var sensation = new Sensation();
 		sensation.ActorIndex = actorIndex;
 		sensation.TargetRegion = region;
