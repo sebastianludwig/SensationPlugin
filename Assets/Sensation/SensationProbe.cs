@@ -58,7 +58,7 @@ public class SensationProbe : MonoBehaviour {
 		}
 		
 		if (float.IsNaN(newIntensity)) {
-			// TODO log warning
+			Debug.Log("Sensation probe for " + region + " actor index " + actorIndex + " could not evaluate intensity.");
 			return;
 		}
 		

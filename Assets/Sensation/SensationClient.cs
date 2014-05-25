@@ -15,35 +15,49 @@ public class SensationClient {
 	private bool shouldStopTransmitting = false;
 	private readonly object shouldStopTransmittingLock = new object();
 	
+	#region Singleton
+	// singleton implemenation following http://csharpindepth.com/articles/general/singleton.aspx
 	public static readonly SensationClient Instance = new SensationClient();
 
-	// Explicit static constructor to tell C# compiler
-	// not to mark type as beforefieldinit (see http://csharpindepth.com/articles/general/singleton.aspx)
 	static SensationClient() {}
 
 	public SensationClient() {
 		this.signal = new AutoResetEvent(false);
 	}
+	#endregion
 	
 	public void Connect(string serverName) {
-		// TODO return if thread already started
+		if (transmitThread.IsAlive) {
+			Debug.Log("Sensation client already connected - disconnect before reconnecting");
+			return;
+		}
 		
+		lock (shouldStopTransmittingLock) {
+			shouldStopTransmitting = false;
+		}
 		transmitThread = new Thread(Transmit);
+		transmitThread.IsBackground = true;		// don't keep the application alive
 		transmitThread.Start(serverName);
 	}
 	
 	public void Disconnect() {
-		// TODO return if thread not started..
+		if (transmitThread == null || !transmitThread.IsAlive) {
+			return;
+		}
 		lock (shouldStopTransmittingLock) {
 			shouldStopTransmitting = true;
 		}
 		signal.Set();
-		transmitThread.Join();
+		transmitThread.Join(2000);				// wait for background thread termination, but not too long
 		sensationQueue.Clear();
 	}
 	
 	public void SendSensationAsync(Sensation sensation) {
-		// TODO Connect if not connected
+		lock (shouldStopTransmittingLock) {		// this check prevents sensations filling up the queue after disconnecting, which would keep the transmitting thread stuck in the inner while loop
+			if (shouldStopTransmitting) {
+				return;
+			}
+		}
 		sensationQueue.Enqueue(sensation);
 		signal.Set();
 	}
