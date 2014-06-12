@@ -27,7 +27,7 @@ public class SensationClient {
 	#endregion
 	
 	public void Connect(string serverName) {
-		if (transmitThread.IsAlive) {
+		if (transmitThread != null && transmitThread.IsAlive) {
 			Debug.Log("Sensation client already connected - disconnect before reconnecting");
 			return;
 		}
@@ -73,7 +73,7 @@ public class SensationClient {
 				return;
 			}
 			
-			ProcessingLoop(new IPEndPoint(serverIps[0], 10000));
+			ProcessingLoop(serverIps[0], 10000);
     	} catch(Exception e) {
 			// TODO finer exception handling
 			// GetHostEntry
@@ -88,8 +88,8 @@ public class SensationClient {
     	}
 	}
 	
-	private void ProcessingLoop(IPEndPoint server) {
-		using (TcpClient client = new TcpClient(server))
+	private void ProcessingLoop(IPAddress server, int port) {
+		using (TcpClient client = new TcpClient(server.ToString(), port))
 		using (NetworkStream networkStream = client.GetStream())
 		{
 			try {
