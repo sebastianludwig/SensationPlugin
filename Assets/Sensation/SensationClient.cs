@@ -6,6 +6,13 @@ using System.Net;
 using System.Net.Sockets;
 using ProtoBuf;
 
+public delegate void SensationClientExceptionDelegate(Exception e);
+
+/**
+ * The actual transmission over the network is handled in a background thread. Therefore
+ * any exceptions can't be reported directly and will be reported to any registered
+ * exception handlers.
+ **/
 public class SensationClient {
 	private ConcurrentQueue<Sensation> sensationQueue = new ConcurrentQueue<Sensation>();
 	
@@ -14,6 +21,8 @@ public class SensationClient {
 	
 	private bool shouldStopTransmitting = false;
 	private readonly object shouldStopTransmittingLock = new object();
+	
+	private SensationClientExceptionDelegate exceptionDelegate;
 	
 	#region Singleton
 	// singleton implemenation following http://csharpindepth.com/articles/general/singleton.aspx
@@ -25,6 +34,30 @@ public class SensationClient {
 		this.signal = new AutoResetEvent(false);
 	}
 	#endregion
+	
+	/**
+	  * Exception delegates are called on all kind of occasions:
+	  * ArgumentException
+	  * 	Hostname is an invalid IP
+	  * ArgumentOutOfRangeException
+	  * 	Hostname was longer than 255 characters
+	  * InvalidOperationException
+	  * 	The client is not connected anymore
+	  * 	The network stream is not writable
+	  * ObejctDisposedException
+	  * 	The client has been closed (actually the underlying TcpClient) 
+	  * SocketException
+	  * 	An error was encountered when resolving the hsotname
+	  * 	An error occured when accessing the socket
+	  * 
+	**/
+	public void AddExceptionDelegate(SensationClientExceptionDelegate exceptionDelegate) {
+		if (this.exceptionDelegate == null) {
+			this.exceptionDelegate = exceptionDelegate;
+		} else {
+			this.exceptionDelegate += exceptionDelegate;
+		}
+	}
 	
 	public void Connect(string serverName) {
 		if (transmitThread != null && transmitThread.IsAlive) {
@@ -68,22 +101,12 @@ public class SensationClient {
 		
 		try {
         	IPAddress[] serverIps = Dns.GetHostEntry(serverNameString).AddressList;
-        	if (serverIps.Length < 1) {
-				Debug.LogError("Unable to find IP for server " + serverNameString);
-				return;
-			}
 			
 			ProcessingLoop(serverIps[0], 10000);
     	} catch(Exception e) {
-			// TODO finer exception handling
-			// GetHostEntry
-			// whatever ProcessingLoop throws 
-			//		TcpClient.Connect() (probably implicitly called)
-			//		TcpClient.GetStream()
-			//		own exceptions if !connected or !canWrite
-			//		Serializer.SerializeWithLengthPrefix()?
-			Debug.LogError("Unable to connect to server " + serverNameString);
-        	Debug.LogError(e);
+			if (exceptionDelegate != null) {
+				exceptionDelegate(e);
+			}
 			return;
     	}
 	}
@@ -101,13 +124,11 @@ public class SensationClient {
 					}
 					
 					if (!client.Connected) {
-						Debug.LogError("Unable to send command - client disconnected");
-						break;
+						throw new InvalidOperationException("Unable to send command - client disconnected");
 					}
 			
 					if (!networkStream.CanWrite) {
-						Debug.LogError("Can't write to network stream");
-						break;
+						throw new InvalidOperationException("Can't write to network stream");
 					}
 					
 					while (sensationQueue.Count > 0) {
@@ -116,7 +137,7 @@ public class SensationClient {
 						if (!sensationDequeued || sensation == null) {
 							break;
 						}
-						Serializer.SerializeWithLengthPrefix(networkStream, sensation, PrefixStyle.Fixed32BigEndian);
+						Serializer.SerializeWithLengthPrefix(networkStream, sensation, PrefixStyle.Fixed32BigEndian);  // this shouldn't throw anything..
 					}
 					
 					signal.WaitOne();

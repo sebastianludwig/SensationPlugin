@@ -6,8 +6,13 @@ public class SensationHub : MonoBehaviour {
 	string sensationDriverNetworkName = "sensationdriver.local";
 	
     void Awake() {
+		SensationClient.Instance.AddExceptionDelegate(OnClientException);
 		SensationClient.Instance.Connect(sensationDriverNetworkName);
     }
+	
+	void OnClientException(Exception e) {
+		Debug.LogException(e);
+	}
 	
 	void OnDestroy() {
 		SensationClient.Instance.Disconnect();
