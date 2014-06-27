@@ -11,7 +11,7 @@ public delegate void SensationClientExceptionDelegate(Exception e);
 /**
  * The actual transmission over the network is handled in a background thread. Therefore
  * any exceptions can't be reported directly and will be reported to any registered
- * exception handlers.
+ * exception handlers. Be careful, they will NOT be called on the main thread!
  **/
 public class SensationClient {
 	private ConcurrentQueue<Sensation> sensationQueue = new ConcurrentQueue<Sensation>();
@@ -49,7 +49,6 @@ public class SensationClient {
 	  * SocketException
 	  * 	An error was encountered when resolving the hsotname
 	  * 	An error occured when accessing the socket
-	  * 
 	**/
 	public void AddExceptionDelegate(SensationClientExceptionDelegate exceptionDelegate) {
 		if (this.exceptionDelegate == null) {
@@ -115,36 +114,34 @@ public class SensationClient {
 		using (TcpClient client = new TcpClient(server.ToString(), port))
 		using (NetworkStream networkStream = client.GetStream())
 		{
-			try {
-				while (true) {
-					lock (shouldStopTransmittingLock) {
-						if (shouldStopTransmitting) {
-							break;
-						}
+			while (true) {
+				lock (shouldStopTransmittingLock) {
+					if (shouldStopTransmitting) {
+						break;
 					}
-					
-					if (!client.Connected) {
-						throw new InvalidOperationException("Unable to send command - client disconnected");
-					}
-			
-					if (!networkStream.CanWrite) {
-						throw new InvalidOperationException("Can't write to network stream");
-					}
-					
-					while (sensationQueue.Count > 0) {
-						Sensation sensation;
-						bool sensationDequeued = sensationQueue.TryDequeue(out sensation);
-						if (!sensationDequeued || sensation == null) {
-							break;
-						}
-						Serializer.SerializeWithLengthPrefix(networkStream, sensation, PrefixStyle.Fixed32BigEndian);  // this shouldn't throw anything..
-					}
-					
-					signal.WaitOne();
 				}
-			} finally {
-				networkStream.Close();
-				client.Close();
+				
+				if (!client.Connected) {
+					throw new InvalidOperationException("Unable to send command - client disconnected");
+				}
+		
+				if (!networkStream.CanWrite) {
+					throw new InvalidOperationException("Can't write to network stream");
+				}
+				
+				if (sensationQueue.Count > 100) {
+					Debug.LogWarning("More than 100 sensation messages queued for network transmission: " + sensationQueue.Count + " messages");
+				}
+				while (sensationQueue.Count > 0) {
+					Sensation sensation;
+					bool sensationDequeued = sensationQueue.TryDequeue(out sensation);
+					if (!sensationDequeued || sensation == null) {
+						break;
+					}
+					Serializer.SerializeWithLengthPrefix(networkStream, sensation, PrefixStyle.Fixed32BigEndian);  // this shouldn't throw anything..
+				}
+
+				signal.WaitOne();
 			}
 		}
 	}

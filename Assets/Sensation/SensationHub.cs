@@ -10,7 +10,7 @@ public class SensationHub : MonoBehaviour {
 		SensationClient.Instance.Connect(sensationDriverNetworkName);
     }
 	
-	void OnClientException(Exception e) {
+	private void OnClientException(Exception e) {
 		Debug.LogException(e);
 	}
 	
