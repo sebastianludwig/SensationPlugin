@@ -9,5 +9,6 @@
 /*.suo
 /*.user
 /*.userprefs
-/*.pidb
+*.pidb
+*.pidb.meta
 /*.booproj
