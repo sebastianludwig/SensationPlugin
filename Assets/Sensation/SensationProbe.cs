@@ -15,7 +15,7 @@ public class SensationProbe : MonoBehaviour {
 	}
 	
 	[SerializeField]
-	Sensation.Region region = Sensation.Region.LeftForearm;
+	Vibration.Region region = Vibration.Region.LeftForearm;
 	
 	[SerializeField]
 	int actorIndex = 0;
@@ -66,12 +66,12 @@ public class SensationProbe : MonoBehaviour {
 			return;
 		}
 		
-		var sensation = new Sensation();
-		sensation.ActorIndex = actorIndex;
-		sensation.TargetRegion = region;
-		sensation.Intensity = newIntensity;
+		var vibration = new Vibration();
+		vibration.ActorIndex = actorIndex;
+		vibration.TargetRegion = region;
+		vibration.Intensity = newIntensity;
 		
-		SensationClient.Instance.SendSensationAsync(sensation);
+		SensationClient.Instance.SendAsync(vibration);
 		
 		previousIntensity = newIntensity;
 	}

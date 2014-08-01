@@ -14,7 +14,7 @@ public delegate void SensationClientExceptionDelegate(Exception e);
  * exception handlers. Be careful, they will NOT be called on the main thread!
  **/
 public class SensationClient {
-	private ConcurrentQueue<Sensation> sensationQueue = new ConcurrentQueue<Sensation>();
+	private ConcurrentQueue<Message> messageQueue = new ConcurrentQueue<Message>();
 	
 	private Thread transmitThread;
 	private EventWaitHandle signal;
@@ -81,16 +81,21 @@ public class SensationClient {
 		}
 		signal.Set();
 		transmitThread.Join(2000);				// wait for background thread termination, but not too long
-		sensationQueue.Clear();
+		messageQueue.Clear();
 	}
 	
-	public void SendSensationAsync(Sensation sensation) {
+	public void SendAsync(Vibration vibration) {
 		lock (shouldStopTransmittingLock) {		// this check prevents sensations filling up the queue after disconnecting, which would keep the transmitting thread stuck in the inner while loop
 			if (shouldStopTransmitting) {
 				return;
 			}
 		}
-		sensationQueue.Enqueue(sensation);
+
+		Message message = new Message();
+		message.Type = Message.MessageType.Vibration;
+		message.Vibration = vibration;
+
+		messageQueue.Enqueue(message);
 		signal.Set();
 	}
 	
@@ -129,16 +134,16 @@ public class SensationClient {
 					throw new InvalidOperationException("Can't write to network stream");
 				}
 				
-				if (sensationQueue.Count > 100) {
-					Debug.LogWarning("More than 100 sensation messages queued for network transmission: " + sensationQueue.Count + " messages");
+				if (messageQueue.Count > 100) {
+					Debug.LogWarning("More than 100 sensation messages queued for network transmission: " + messageQueue.Count + " messages");
 				}
-				while (sensationQueue.Count > 0) {
-					Sensation sensation;
-					bool sensationDequeued = sensationQueue.TryDequeue(out sensation);
-					if (!sensationDequeued || sensation == null) {
+				while (messageQueue.Count > 0) {
+					Message message;
+					bool messageDequeued = messageQueue.TryDequeue(out message);
+					if (!messageDequeued || message == null) {
 						break;
 					}
-					Serializer.SerializeWithLengthPrefix(networkStream, sensation, PrefixStyle.Fixed32BigEndian);  // this shouldn't throw anything..
+					Serializer.SerializeWithLengthPrefix(networkStream, message, PrefixStyle.Fixed32BigEndian);  // this shouldn't throw anything..
 				}
 
 				signal.WaitOne();
