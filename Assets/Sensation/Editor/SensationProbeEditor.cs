@@ -32,19 +32,19 @@ public class SensationProbeEditor : Editor {
 	void OnSceneGUI() {
 		Handles.color = Color.cyan;
 		Vector3 target = probe.transform.position + probe.transform.rotation * probe.direction.normalized * probe.reach;
-		
-		Undo.SetSnapshotTarget(probe, "move probe target");
+
+		EditorGUI.BeginChangeCheck();
 		Vector3 newTarget = Handles.PositionHandle(target, Quaternion.identity);
-		Vector3 newDirection = newTarget - probe.transform.position;
-		
-		probe.reach = newDirection.magnitude;
-		newDirection = Quaternion.Inverse(probe.transform.rotation) * newDirection.normalized * probe.direction.magnitude;
-		probe.direction = new Vector3((float)Math.Round(newDirection.x, 4), (float)Math.Round(newDirection.y, 4), (float)Math.Round(newDirection.z, 4));
-		
-		if (GUI.changed) {
+		if (EditorGUI.EndChangeCheck()) {
+			Undo.RecordObject(probe, "move probe target");
+			Vector3 newDirection = newTarget - probe.transform.position;
+			
+			probe.reach = newDirection.magnitude;
+			newDirection = Quaternion.Inverse(probe.transform.rotation) * newDirection.normalized * probe.direction.magnitude;
+			probe.direction = new Vector3((float)Math.Round(newDirection.x, 4), (float)Math.Round(newDirection.y, 4), (float)Math.Round(newDirection.z, 4));
+			
+
 			EditorUtility.SetDirty(probe);
 		}
-		
-		Undo.ClearSnapshotTarget();
 	}
 }
