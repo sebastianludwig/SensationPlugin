@@ -1,0 +1,47 @@
+{
+    "vibration": {
+        "regions": [
+            {
+                "name": "LEFT_HAND",
+                "driver_address": 0x40,
+                "actors": [
+                    {
+                        "position": "thumb",
+                        "index": 0,
+                        "outlet": 0
+                    },
+                    {
+                        "position": "index finger",
+                        "index": 1,
+                        "outlet": 1
+                    },
+                    {
+                        "position": "middle finger",
+                        "index": 2,
+                        "outlet": 2
+                    },
+                    {
+                        "position": "ring finger",
+                        "index": 3,
+                        "outlet": 3
+                    },
+                    {
+                        "position": "pinkie",
+                        "index": 4,
+                        "outlet": 4
+                    },
+                    {
+                        "position": "palm",
+                        "index": 5,
+                        "outlet": 5
+                    },
+                    {
+                        "position": "hand außen",
+                        "index": 6,
+                        "outlet": 6
+                    }
+                ]
+            }
+        ]
+    }
+}

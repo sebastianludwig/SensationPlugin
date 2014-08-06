@@ -1,5 +1,7 @@
 using UnityEngine;
 using System;
+using System.IO;
+using ProtoBuf;
 
 public class SensationHub : MonoBehaviour {	
 	[SerializeField]
@@ -16,5 +18,19 @@ public class SensationHub : MonoBehaviour {
 	
 	void OnDestroy() {
 		SensationClient.Instance.Disconnect();
+	}
+
+	public void LoadPattern(TextAsset serialized) {
+		LoadPattern message = Serializer.Deserialize<LoadPattern>(new MemoryStream(serialized.bytes));
+
+		SensationClient.Instance.SendAsync(message);
+	}
+	
+	public void PlayPattern(string identifier, int priority = 80) {
+		PlayPattern message = new PlayPattern();
+		message.Identifier = identifier;
+		message.Priority = priority;
+
+		SensationClient.Instance.SendAsync(message);
 	}
 }

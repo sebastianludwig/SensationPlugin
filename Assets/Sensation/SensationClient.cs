@@ -83,22 +83,42 @@ public class SensationClient {
 		transmitThread.Join(2000);				// wait for background thread termination, but not too long
 		messageQueue.Clear();
 	}
-	
-	public void SendAsync(Vibration vibration) {
+
+	public void SendAsync(Message message) {
 		lock (shouldStopTransmittingLock) {		// this check prevents sensations filling up the queue after disconnecting, which would keep the transmitting thread stuck in the inner while loop
 			if (shouldStopTransmitting) {
 				return;
 			}
 		}
 
-		Message message = new Message();
-		message.Type = Message.MessageType.Vibration;
-		message.Vibration = vibration;
-
 		messageQueue.Enqueue(message);
 		signal.Set();
 	}
 	
+	public void SendAsync(Vibration vibration) {
+		Message message = new Message();
+		message.Type = Message.MessageType.Vibration;
+		message.Vibration = vibration;
+
+		SendAsync(message);
+	}
+
+	public void SendAsync(LoadPattern pattern) {
+		Message message = new Message();
+		message.Type = Message.MessageType.LoadPattern;
+		message.LoadPattern = pattern;
+		
+		SendAsync(message);
+	}
+
+	public void SendAsync(PlayPattern pattern) {
+		Message message = new Message();
+		message.Type = Message.MessageType.PlayPattern;
+		message.PlayPattern = pattern;
+		
+		SendAsync(message);
+	}
+
 	#region background thread
 	private void Transmit(object serverName) {
 		string serverNameString = (string)serverName;
