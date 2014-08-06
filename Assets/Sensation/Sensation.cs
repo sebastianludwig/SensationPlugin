@@ -61,6 +61,9 @@ public class Track {
 	[ProtoMember(2, IsRequired = true)]
 	public int ActorIndex { get; set; }
 	
+	[ProtoMember(3)]
+	public Keyframe[] Keyframes { get; set; }
+	
 }
 
 [ProtoContract]
@@ -69,7 +72,7 @@ public class LoadPattern {
 	public string Identifier { get; set; }
 	
 	[ProtoMember(2)]
-	public Track Tracks { get; set; }
+	public Track[] Tracks { get; set; }
 	
 }
 
