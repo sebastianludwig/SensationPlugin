@@ -70,7 +70,7 @@ public class SensationPatternsEditor : Editor {
 			Debug.Log("Found more than one 'actor_conf' file - using the one at " + actorConfPath);
 		}
 
-		var actorConf = MiniJSON.Json.Deserialize(File.ReadAllText(actorConfPath)) as Dictionary<string,object>;
+		var actorConf = MiniJSON.Json.Deserialize(File.ReadAllText(actorConfPath)) as Dictionary<string, object>;
 
 		// build propertyMappings
 		var propertyMappings = new Dictionary<string, ActorLocation>();
@@ -128,7 +128,7 @@ public class SensationPatternsEditor : Editor {
 		}
 
 		Track track = new Track();
-		track.Region = location.Region;
+		track.TargetRegion = location.Region;
 		track.ActorIndex = location.Index;
 
 		var keyframes = new List<Track.Keyframe>();

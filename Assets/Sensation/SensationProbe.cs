@@ -15,7 +15,7 @@ public class SensationProbe : MonoBehaviour {
 	}
 	
 	[SerializeField]
-	Vibration.Region region = Vibration.Region.LeftForearm;
+	Vibration.Region region = Vibration.Region.Chest;
 	
 	[SerializeField]
 	int actorIndex = 0;
