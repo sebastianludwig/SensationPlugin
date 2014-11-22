@@ -9,15 +9,6 @@ using ProtoBuf;
 
 [CustomEditor(typeof(SensationPatterns))]
 public class SensationPatternsEditor : Editor {
-	private class ActorLocation {
-		public Vibration.Region Region;
-		public int Index;
-		public ActorLocation(Vibration.Region region, int index) {
-			this.Region = region;
-			this.Index = index;
-		}
-	}
-
 	private static String MakeRelativePath(string fromPath, string toPath) {
 		if (string.IsNullOrEmpty(fromPath)) throw new ArgumentNullException("fromPath");
 		if (string.IsNullOrEmpty(toPath))   throw new ArgumentNullException("toPath");
@@ -42,61 +33,6 @@ public class SensationPatternsEditor : Editor {
 		return Path.GetDirectoryName(Application.dataPath);
 	}
 
-	private static string UpcaseFirstChar(string s) {
-		return char.ToUpper(s[0]) + s.Substring(1).ToLower();
-	}
-
-	private static Dictionary<string, ActorLocation> BuildPropertyMappings() {
-		Func<string, Vibration.Region> toRegion = delegate(string name) {
-			var parts = Array.ConvertAll<string, string>(name.Split('_'), part => UpcaseFirstChar(part));
-
-			string regionName = string.Join("", parts);
-			return (Vibration.Region)Enum.Parse(typeof(Vibration.Region), regionName);
-		};
-		Func<string, string> toName = delegate(string name) {
-			var parts = Array.ConvertAll<string, string>(name.Split(new char[] {'_', ' '}), part => UpcaseFirstChar(part));
-			parts[0] = parts[0].ToLower();
-			return string.Join("", parts);
-		};
-
-		// load actor_conf.json
-		string[] guids = AssetDatabase.FindAssets("actor_conf");
-		if (guids.Length == 0) {
-			throw new FileNotFoundException("Could not find 'actor_conf' in asset database");
-		}
-
-		string actorConfPath = Path.Combine(ProjectRootPath(), AssetDatabase.GUIDToAssetPath(guids[0]));
-		if (guids.Length > 1) {
-			Debug.Log("Found more than one 'actor_conf' file - using the one at " + actorConfPath);
-		}
-
-		var actorConf = MiniJSON.Json.Deserialize(File.ReadAllText(actorConfPath)) as Dictionary<string, object>;
-
-		// build propertyMappings
-		var propertyMappings = new Dictionary<string, ActorLocation>();
-
-		var vibration = (Dictionary<string, object>)actorConf["vibration"];
-		var regions = (List<object>)vibration["regions"];
-		foreach (Dictionary<string, object> regionProperties in regions) {
-			string regionName = toName(regionProperties["name"].ToString());
-			Vibration.Region region;
-			try {
-				region = toRegion(regionProperties["name"].ToString());
-			} catch (ArgumentException) {
-				Debug.LogError("Could not map region " + regionProperties["name"] + " - skipping region");
-				continue;
-			}
-
-			var actors = (List<object>)regionProperties["actors"];
-			foreach (Dictionary<string, object> actor in actors) {
-				string propertyName = regionName + "_" + toName(actor["position"].ToString());
-				propertyMappings[propertyName] = new ActorLocation(region, Convert.ToInt32(actor["index"]));
-			}
-		}
-
-		return propertyMappings;
-	}
-	
 	private SensationPatterns patterns;
 
 	private string newPatternName;
@@ -121,9 +57,9 @@ public class SensationPatternsEditor : Editor {
 		patterns.AddPattern(pattern, name);
 	}
 
-	private Track SerializeCurve(AnimationClipCurveData curve, Dictionary<string, ActorLocation> propertyMappings) {
-		ActorLocation location = null;
-		if (!propertyMappings.TryGetValue(curve.propertyName, out location)) {
+	private Track SerializeCurve(AnimationClipCurveData curve) {
+		SensationPatterns.ActorLocation location;
+		if (!SensationPatterns.propertyMappings.TryGetValue(curve.propertyName, out location)) {
 			throw new ArgumentException("No actor mapping found for " + curve.propertyName);
 		}
 
@@ -171,11 +107,10 @@ public class SensationPatternsEditor : Editor {
 	}
 
 	private LoadPattern Serialize(AnimationClip pattern) {
-		var propertyMappings = BuildPropertyMappings();
 		var tracks = new List<Track>();
 		AnimationClipCurveData[] curves = AnimationUtility.GetAllCurves(pattern);
 		foreach (var curve in curves) {
-			tracks.Add(SerializeCurve(curve, propertyMappings));
+			tracks.Add(SerializeCurve(curve));
 		}
 
 		var message = new LoadPattern();
