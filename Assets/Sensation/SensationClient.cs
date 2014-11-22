@@ -30,7 +30,7 @@ public class SensationClient {
 
 	static SensationClient() {}
 
-	public SensationClient() {
+	private SensationClient() {
 		this.signal = new AutoResetEvent(false);
 	}
 	#endregion
