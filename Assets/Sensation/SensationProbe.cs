@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 using System.Collections;
 
 public class SensationProbe : MonoBehaviour {
@@ -38,8 +39,13 @@ public class SensationProbe : MonoBehaviour {
 	[SerializeField]
 	UpdateMode updateMode = UpdateMode.OnChange;
 	
-	float previousIntensity = float.NaN;
+	private float previousIntensity = float.NaN;
+	private SensationHub hub;
 	
+	void Awake() {
+		hub = GameObject.FindObjectOfType(typeof(SensationHub)) as SensationHub;
+	}
+
 	void Update() {
 		float newIntensity = float.NaN;
 		
@@ -65,12 +71,16 @@ public class SensationProbe : MonoBehaviour {
 		if (updateMode == UpdateMode.OnChange && Mathf.Abs(newIntensity - previousIntensity) < 0.001) {
 			return;
 		}
-		
+
+		if (hub.saveProfilingInformation) {
+			hub.profiler.Log("probe", actorIndex.ToString(), newIntensity.ToString());
+		}
+
 		var vibration = new Vibration();
 		vibration.ActorIndex = actorIndex;
 		vibration.TargetRegion = region;
 		vibration.Intensity = newIntensity;
-		
+
 		SensationClient.Instance.SendAsync(vibration);
 		
 		previousIntensity = newIntensity;

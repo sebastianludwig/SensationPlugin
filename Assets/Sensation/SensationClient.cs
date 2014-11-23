@@ -23,6 +23,8 @@ public class SensationClient {
 	private readonly object shouldStopTransmittingLock = new object();
 	
 	private SensationClientExceptionDelegate exceptionDelegate;
+
+	public SensationProfiler profiler;
 	
 	#region Singleton
 	// singleton implemenation following http://csharpindepth.com/articles/general/singleton.aspx
@@ -161,6 +163,9 @@ public class SensationClient {
 					bool messageDequeued = messageQueue.TryDequeue(out message);
 					if (!messageDequeued || message == null) {
 						break;
+					}
+					if (profiler != null) {			// this isn't properly synchronized to spare the lock during normal operations
+						profiler.Log("client", message.ToString());
 					}
 					Serializer.SerializeWithLengthPrefix(networkStream, message, PrefixStyle.Fixed32BigEndian);  // this shouldn't throw anything..
 				}
