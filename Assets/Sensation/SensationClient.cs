@@ -17,7 +17,7 @@ public class SensationClient {
 	private ConcurrentQueue<Message> messageQueue = new ConcurrentQueue<Message>();
 	
 	private Thread transmitThread;
-	private EventWaitHandle signal;
+	private EventWaitHandle signal = new AutoResetEvent(false);
 	
 	private bool shouldStopTransmitting = false;
 	private readonly object shouldStopTransmittingLock = new object();
@@ -31,7 +31,6 @@ public class SensationClient {
 	static SensationClient() {}
 
 	private SensationClient() {
-		this.signal = new AutoResetEvent(false);
 	}
 	#endregion
 	
