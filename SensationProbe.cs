@@ -42,6 +42,9 @@ public class SensationProbe : MonoBehaviour {
 	[SerializeField]
 	OutOfReachValue outOfReachValue = OutOfReachValue.Off;
 	
+    [SerializeField]
+    private float sensitivityInPercent = 1;
+
 	[SerializeField]
 	UpdateMode updateMode = UpdateMode.OnChange;
 	
@@ -81,7 +84,7 @@ public class SensationProbe : MonoBehaviour {
 			return;
 		}
 
-		if (updateMode == UpdateMode.OnChange && Mathf.Abs(newIntensity - previousIntensity) < 0.01) {
+		if (updateMode == UpdateMode.OnChange && Mathf.Abs(newIntensity - previousIntensity) < sensitivityInPercent / 100f) {
 			return;
 		}
 
