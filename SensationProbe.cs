@@ -23,6 +23,9 @@ public class SensationProbe : MonoBehaviour {
 	
 	[SerializeField]
 	int actorIndex = 0;
+
+    [SerializeField]
+    public Vector3 origin = Vector3.zero;
 	
 	[SerializeField]
 	public Vector3 direction = Vector3.up;
@@ -54,10 +57,15 @@ public class SensationProbe : MonoBehaviour {
 	void Update() {
 		float newIntensity = float.NaN;
 		
+        Vector3 worldOrigin = transform.TransformPoint(origin);
+        Vector3 worldDirection = transform.localToWorldMatrix * (direction.normalized * reach);
+        float worldReach = worldDirection.magnitude;
+
 		RaycastHit hitInfo;
-		if (Physics.Raycast(transform.position, transform.rotation * direction.normalized, out hitInfo, reach, layerMask)) {
-			float ratio = hitInfo.distance / reach;
+		if (Physics.Raycast(worldOrigin, worldDirection.normalized, out hitInfo, worldReach, layerMask)) {
+			float ratio = hitInfo.distance / worldReach;
 			newIntensity = intensity.Evaluate(ratio);
+            Debug.Log(ratio);
 		} else {
 			if (outOfReachValue == OutOfReachValue.Off) {
 				newIntensity = 0;

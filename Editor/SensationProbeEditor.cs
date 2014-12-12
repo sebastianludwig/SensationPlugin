@@ -18,33 +18,62 @@ public class SensationProbeEditor : Editor {
 	
 	[DrawGizmo(GizmoType.Selected)]
 	static void SelectedGizmos(SensationProbe probe, GizmoType gizmoType) {
+		Vector3 worldOrigin = probe.transform.TransformPoint(probe.origin);
+		Vector3 worldDirection = probe.transform.localToWorldMatrix * (probe.direction.normalized * probe.reach);
+		Vector3 worldTarget = worldOrigin + worldDirection;
+
 		Gizmos.color = Color.cyan;
-		Vector3 target = probe.transform.position + probe.transform.rotation * probe.direction.normalized * probe.reach;
-		Gizmos.DrawLine(probe.transform.position, target);
+		Gizmos.DrawLine(worldOrigin, worldTarget);
 		
 		Handles.color = Color.cyan;
-		Vector3 direction = (target - probe.transform.position).normalized;
-		Quaternion rotation = Quaternion.FromToRotation(Vector3.forward, direction);
-		float size = HandleUtility.GetHandleSize(target) * 0.15f;
-		Handles.ConeCap(0, target - size * 0.5f * direction, rotation, size);
+		Quaternion rotation = Quaternion.FromToRotation(Vector3.forward, worldDirection.normalized);
+		float size = HandleUtility.GetHandleSize(worldTarget) * 0.15f;
+		Handles.ConeCap(0, worldTarget - size * 0.5f * worldDirection.normalized, rotation, size);
 	}
 	
 	void OnSceneGUI() {
+		Vector3 worldOrigin = probe.transform.TransformPoint(probe.origin);
+		Vector3 worldDirection = probe.transform.localToWorldMatrix * (probe.direction.normalized * probe.reach);
+		Vector3 worldTarget = worldOrigin + worldDirection;
+
 		Handles.color = Color.cyan;
-		Vector3 target = probe.transform.position + probe.transform.rotation * probe.direction.normalized * probe.reach;
+
+		bool altPressed = Event.current.alt;
+
+		if (!altPressed) {
+			EditorGUI.BeginChangeCheck();
+			Vector3 newTarget = Handles.PositionHandle(worldTarget, Quaternion.identity);
+			if (EditorGUI.EndChangeCheck()) {
+				Undo.RecordObject(probe, "move probe target");
+
+				SetDirection(probe, worldOrigin, newTarget);
+
+				EditorUtility.SetDirty(probe);
+			}
+		}
 
 		EditorGUI.BeginChangeCheck();
-		Vector3 newTarget = Handles.PositionHandle(target, Quaternion.identity);
+		Vector3 newOrigin = Handles.PositionHandle(worldOrigin, Quaternion.identity);
 		if (EditorGUI.EndChangeCheck()) {
-			Undo.RecordObject(probe, "move probe target");
-			Vector3 newDirection = newTarget - probe.transform.position;
-			
-			probe.reach = newDirection.magnitude;
-			newDirection = Quaternion.Inverse(probe.transform.rotation) * newDirection.normalized * probe.direction.magnitude;
-			probe.direction = new Vector3((float)Math.Round(newDirection.x, 4), (float)Math.Round(newDirection.y, 4), (float)Math.Round(newDirection.z, 4));
-			
+			Undo.RecordObject(probe, "move probe origin");
+
+			if (!altPressed) {
+				SetDirection(probe, newOrigin, worldTarget);
+			}
+
+			probe.origin = probe.transform.InverseTransformPoint(newOrigin);
 
 			EditorUtility.SetDirty(probe);
 		}
+	}
+
+	private void SetDirection(SensationProbe probe, Vector3 worldOrigin, Vector3 worldTarget) {
+		Vector3 newDirection = worldTarget - worldOrigin;
+		newDirection = probe.transform.worldToLocalMatrix * newDirection;
+		
+		probe.reach = newDirection.magnitude;
+		
+		newDirection.Normalize();
+		probe.direction = new Vector3((float)Math.Round(newDirection.x, 4), (float)Math.Round(newDirection.y, 4), (float)Math.Round(newDirection.z, 4));
 	}
 }
