@@ -41,6 +41,9 @@ public class SensationProbe : MonoBehaviour {
 	
 	[SerializeField]
 	OutOfReachValue outOfReachValue = OutOfReachValue.Off;
+
+    [SerializeField]
+    private float smoothingFactor = 0.8f;
 	
     [SerializeField]
     private float sensitivityInPercent = 1;
@@ -50,7 +53,8 @@ public class SensationProbe : MonoBehaviour {
 	
     // TODO: Add sampling frequency
 
-	private float previousIntensity = float.NaN;
+    private float averagedIntensity = 0;
+	private float lastTransmittedIntensity = float.NaN;
 	private SensationHub hub;
 	
 	void Awake() {
@@ -68,7 +72,6 @@ public class SensationProbe : MonoBehaviour {
 		if (Physics.Raycast(worldOrigin, worldDirection.normalized, out hitInfo, worldReach, layerMask)) {
 			float ratio = hitInfo.distance / worldReach;
 			newIntensity = intensity.Evaluate(ratio);
-            Debug.Log(ratio);
 		} else {
 			if (outOfReachValue == OutOfReachValue.Off) {
 				newIntensity = 0;
@@ -84,21 +87,27 @@ public class SensationProbe : MonoBehaviour {
 			return;
 		}
 
-		if (updateMode == UpdateMode.OnChange && Mathf.Abs(newIntensity - previousIntensity) < sensitivityInPercent / 100f) {
+        // calculate exponentially decaying moving average
+        smoothingFactor = Mathf.Clamp01(smoothingFactor);
+        averagedIntensity = smoothingFactor * newIntensity + (1 - smoothingFactor) * averagedIntensity;
+
+        Debug.Log(newIntensity + " - " + averagedIntensity);
+
+		if (updateMode == UpdateMode.OnChange && Mathf.Abs(averagedIntensity - lastTransmittedIntensity) < sensitivityInPercent / 100f) {
 			return;
 		}
 
 		if (hub && hub.saveProfilingInformation) {
-			hub.profiler.Log("probe", actorIndex.ToString(), newIntensity.ToString("G20"));
+			hub.profiler.Log("probe", actorIndex.ToString(), averagedIntensity.ToString("G20"));
 		}
 
 		var vibration = new Vibration();
 		vibration.ActorIndex = actorIndex;
 		vibration.TargetRegion = region;
-		vibration.Intensity = newIntensity;
+		vibration.Intensity = averagedIntensity;
 
 		SensationClient.Instance.SendAsync(vibration);
 		
-		previousIntensity = newIntensity;
+		lastTransmittedIntensity = averagedIntensity;
 	}
 }
