@@ -72,8 +72,8 @@ public class SensationProbe : MonoBehaviour {
 			Debug.Log("Sensation probe for " + region + " actor index " + actorIndex + " could not evaluate intensity.");
 			return;
 		}
-		
-		if (updateMode == UpdateMode.OnChange && Mathf.Abs(newIntensity - previousIntensity) < 0.001) {
+
+		if (updateMode == UpdateMode.OnChange && Mathf.Abs(newIntensity - previousIntensity) < 0.01) {
 			return;
 		}
 
