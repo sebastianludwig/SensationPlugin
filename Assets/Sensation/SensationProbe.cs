@@ -2,6 +2,9 @@ using UnityEngine;
 using System;
 using System.Collections;
 
+
+// Note: Random Cone rays: var coneRandomRotation = Quaternion.Euler (Random.Range (-coneAngle, coneAngle), Random.Range (-coneAngle, coneAngle), 0);
+
 public class SensationProbe : MonoBehaviour {
 	public enum OutOfReachValue { Off, EvaluateZero, EvaluateOne }
 	public enum UpdateMode { Continuous, OnChange }
@@ -39,6 +42,8 @@ public class SensationProbe : MonoBehaviour {
 	[SerializeField]
 	UpdateMode updateMode = UpdateMode.OnChange;
 	
+    // TODO: Add sampling frequency
+
 	private float previousIntensity = float.NaN;
 	private SensationHub hub;
 	

@@ -88,7 +88,7 @@ public class SensationPatternsEditor : Editor {
 			end.ControlPoint.Time = curveKeys[i].time;
 			end.ControlPoint.Value = curveKeys[i].value;
 
-			float tangentLength = Mathf.Abs(end.ControlPoint.Time - start.ControlPoint.Time) / 3f;
+			float tangentLength = Mathf.Abs(end.ControlPoint.Time - start.ControlPoint.Time) / 3f;   // TODO: This aint the tangent length, this is the x-component of the tangent-Vector -> rename
 
 			start.OutTangentEnd = new Track.Keyframe.Point();
 			start.OutTangentEnd.Time = start.ControlPoint.Time + tangentLength;
