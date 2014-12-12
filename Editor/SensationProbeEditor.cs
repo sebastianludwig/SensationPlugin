@@ -29,6 +29,16 @@ public class SensationProbeEditor : Editor {
 		Quaternion rotation = Quaternion.FromToRotation(Vector3.forward, worldDirection.normalized);
 		float size = HandleUtility.GetHandleSize(worldTarget) * 0.15f;
 		Handles.ConeCap(0, worldTarget - size * 0.5f * worldDirection.normalized, rotation, size);
+
+		if (Event.current.shift) {
+			Color color = Handles.color;
+			color.a = 0.6f;
+			var oldMatrix = Gizmos.matrix;
+			Gizmos.color = color;
+			Gizmos.matrix = Matrix4x4.TRS(worldOrigin, rotation, Vector3.one);
+			Gizmos.DrawCube(Vector3.zero, new Vector3(0.3f, 0.3f, 0.005f));
+			Gizmos.matrix = oldMatrix;
+		}
 	}
 	
 	void OnSceneGUI() {
