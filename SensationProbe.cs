@@ -19,13 +19,13 @@ public class SensationProbe : MonoBehaviour {
 	}
 	
 	[SerializeField]
-	Vibration.Region region = Vibration.Region.Chest;
+	private Vibration.Region region = Vibration.Region.Chest;
 	
 	[SerializeField]
-	int actorIndex = 0;
+	private int actorIndex = 0;
 
-    [SerializeField]
-    public Vector3 origin = Vector3.zero;
+	[SerializeField]
+	public Vector3 origin = Vector3.zero;
 	
 	[SerializeField]
 	public Vector3 direction = Vector3.up;
@@ -34,39 +34,66 @@ public class SensationProbe : MonoBehaviour {
 	public float reach = 10f;
 	
 	[SerializeField]
-	LayerMask layerMask = -1;
+	private LayerMask layerMask = -1;
 	
 	[SerializeField]
-	AnimationCurve intensity = new AnimationCurve(initialIntensityKeyframes);
+	private AnimationCurve intensity = new AnimationCurve(initialIntensityKeyframes);
 	
 	[SerializeField]
-	OutOfReachValue outOfReachValue = OutOfReachValue.Off;
-
-    [SerializeField]
-    private float smoothingFactor = 0.8f;
-	
-    [SerializeField]
-    private float sensitivityInPercent = 1;
+	private OutOfReachValue outOfReachValue = OutOfReachValue.Off;
 
 	[SerializeField]
-	UpdateMode updateMode = UpdateMode.OnChange;
-	
-    // TODO: Add sampling frequency
+	private float smoothingFactor = 0.8f;
 
-    private float averagedIntensity = 0;
+	[SerializeField]
+	private int transmitInterval = 1;
+	
+	[SerializeField]
+	private float sensitivityInPercent = 1;
+
+	[SerializeField]
+	private UpdateMode updateMode = UpdateMode.OnChange;
+
+
+	private float averagedIntensity = 0;
 	private float lastTransmittedIntensity = float.NaN;
 	private SensationHub hub;
 	
 	void Awake() {
 		hub = GameObject.FindObjectOfType(typeof(SensationHub)) as SensationHub;
+		StartCoroutine(Transmit());
 	}
+
+	IEnumerator Transmit() {
+		while (true) {
+			if (updateMode == UpdateMode.OnChange && Mathf.Abs(averagedIntensity - lastTransmittedIntensity) < sensitivityInPercent / 100f) {
+				yield return null;
+				continue;
+			}
+
+			if (hub && hub.saveProfilingInformation) {
+				hub.profiler.Log("probe", actorIndex.ToString(), averagedIntensity.ToString("G20"));
+			}
+
+			var vibration = new Vibration();
+			vibration.ActorIndex = actorIndex;
+			vibration.TargetRegion = region;
+			vibration.Intensity = averagedIntensity;
+
+			SensationClient.Instance.SendAsync(vibration);
+			
+			lastTransmittedIntensity = averagedIntensity;
+
+			yield return new WaitForSeconds(transmitInterval / 1000.0f);
+		}
+    }
 
 	void Update() {
 		float newIntensity = float.NaN;
 		
-        Vector3 worldOrigin = transform.TransformPoint(origin);
-        Vector3 worldDirection = transform.localToWorldMatrix * (direction.normalized * reach);
-        float worldReach = worldDirection.magnitude;
+		Vector3 worldOrigin = transform.TransformPoint(origin);
+		Vector3 worldDirection = transform.localToWorldMatrix * (direction.normalized * reach);
+		float worldReach = worldDirection.magnitude;
 
 		RaycastHit hitInfo;
 		if (Physics.Raycast(worldOrigin, worldDirection.normalized, out hitInfo, worldReach, layerMask)) {
@@ -87,27 +114,8 @@ public class SensationProbe : MonoBehaviour {
 			return;
 		}
 
-        // calculate exponentially decaying moving average
-        smoothingFactor = Mathf.Clamp01(smoothingFactor);
-        averagedIntensity = smoothingFactor * newIntensity + (1 - smoothingFactor) * averagedIntensity;
-
-        Debug.Log(newIntensity + " - " + averagedIntensity);
-
-		if (updateMode == UpdateMode.OnChange && Mathf.Abs(averagedIntensity - lastTransmittedIntensity) < sensitivityInPercent / 100f) {
-			return;
-		}
-
-		if (hub && hub.saveProfilingInformation) {
-			hub.profiler.Log("probe", actorIndex.ToString(), averagedIntensity.ToString("G20"));
-		}
-
-		var vibration = new Vibration();
-		vibration.ActorIndex = actorIndex;
-		vibration.TargetRegion = region;
-		vibration.Intensity = averagedIntensity;
-
-		SensationClient.Instance.SendAsync(vibration);
-		
-		lastTransmittedIntensity = averagedIntensity;
+		// calculate exponentially decaying moving average
+		smoothingFactor = Mathf.Clamp01(smoothingFactor);
+		averagedIntensity = smoothingFactor * newIntensity + (1 - smoothingFactor) * averagedIntensity;
 	}
 }
