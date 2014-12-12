@@ -7,10 +7,8 @@ using System.ComponentModel;
 #pragma warning disable 0472
 
 [ProtoContract]
-public class Vibration
-{
-	public enum Region
-	{
+public class Vibration {
+	public enum Region {
 		Chest = 0,
 		Back = 1,
 		LeftArm = 2,
@@ -31,43 +29,48 @@ public class Vibration
 	[ProtoMember(3, IsRequired = true)]
 	public float Intensity { get; set; }
 	
-	[ProtoMember(4) , DefaultValue(100)]
+	[ProtoMember(4), DefaultValue(100)]
 	public int Priority { get; set; }
 	
-	public override string ToString ()
-	{
-		return "{ Vibration:" + " TargetRegion = " + (TargetRegion == null ? "null" : TargetRegion.ToString ()) + ";" + " ActorIndex = " + (ActorIndex == null ? "null" : ActorIndex.ToString ()) + ";" + " Intensity = " + (Intensity == null ? "null" : Intensity.ToString ()) + ";" + " Priority = " + (Priority == null ? "null" : Priority.ToString ()) + ";" + " }";
+	
+	public Vibration() {
+		Priority = 100;
+	}
+	
+	public override string ToString() {
+		return "{ Vibration:" + " TargetRegion = " + (TargetRegion == null ? "null" : TargetRegion.ToString()) + ";" + " ActorIndex = " + (ActorIndex == null ? "null" : ActorIndex.ToString()) + ";" + " Intensity = " + (Intensity == null ? "null" : Intensity.ToString("G20")) + ";" + " Priority = " + (Priority == null ? "null" : Priority.ToString()) + ";" + " }";
 	}
 }
 
 [ProtoContract]
-public class MuscleStimulation
-{
+public class MuscleStimulation {
 	
-	public override string ToString ()
-	{
+	public MuscleStimulation() {
+	}
+	
+	public override string ToString() {
 		return "{ MuscleStimulation:" + " }";
 	}
 }
 
 [ProtoContract]
-public class Track
-{
+public class Track {
 	[ProtoContract]
-	public class Keyframe
-	{
+	public class Keyframe {
 		[ProtoContract]
-		public class Point
-		{
+		public class Point {
 			[ProtoMember(1, IsRequired = true)]
 			public float Time { get; set; }
 			
 			[ProtoMember(2, IsRequired = true)]
 			public float Value { get; set; }
 			
-			public override string ToString ()
-			{
-				return "{ Point:" + " Time = " + (Time == null ? "null" : Time.ToString ()) + ";" + " Value = " + (Value == null ? "null" : Value.ToString ()) + ";" + " }";
+			
+			public Point() {
+			}
+			
+			public override string ToString() {
+				return "{ Point:" + " Time = " + (Time == null ? "null" : Time.ToString()) + ";" + " Value = " + (Value == null ? "null" : Value.ToString()) + ";" + " }";
 			}
 		}
 		
@@ -81,9 +84,12 @@ public class Track
 		[ProtoMember(3)]
 		public Point OutTangentEnd { get; set; }
 		
-		public override string ToString ()
-		{
-			return "{ Keyframe:" + " ControlPoint = " + (ControlPoint == null ? "null" : ControlPoint.ToString ()) + ";" + " InTangentStart = " + (InTangentStart == null ? "null" : InTangentStart.ToString ()) + ";" + " OutTangentEnd = " + (OutTangentEnd == null ? "null" : OutTangentEnd.ToString ()) + ";" + " }";
+		
+		public Keyframe() {
+		}
+		
+		public override string ToString() {
+			return "{ Keyframe:" + " ControlPoint = " + (ControlPoint == null ? "null" : ControlPoint.ToString()) + ";" + " InTangentStart = " + (InTangentStart == null ? "null" : InTangentStart.ToString()) + ";" + " OutTangentEnd = " + (OutTangentEnd == null ? "null" : OutTangentEnd.ToString()) + ";" + " }";
 		}
 	}
 	
@@ -97,47 +103,53 @@ public class Track
 	[ProtoMember(3)]
 	public Keyframe[] Keyframes { get; set; }
 	
-	public override string ToString ()
-	{
-		return "{ Track:" + " TargetRegion = " + (TargetRegion == null ? "null" : TargetRegion.ToString ()) + ";" + " ActorIndex = " + (ActorIndex == null ? "null" : ActorIndex.ToString ()) + ";" + " Keyframes = " + (Keyframes == null ? "null" : Keyframes.ToString ()) + ";" + " }";
+	
+	public Track() {
+	}
+	
+	public override string ToString() {
+		return "{ Track:" + " TargetRegion = " + (TargetRegion == null ? "null" : TargetRegion.ToString()) + ";" + " ActorIndex = " + (ActorIndex == null ? "null" : ActorIndex.ToString()) + ";" + " Keyframes = " + (Keyframes == null ? "null" : Keyframes.ToString()) + ";" + " }";
 	}
 }
 
 [ProtoContract]
-public class LoadPattern
-{
+public class LoadPattern {
 	[ProtoMember(1, IsRequired = true)]
 	public string Identifier { get; set; }
 	
 	[ProtoMember(2)]
 	public Track[] Tracks { get; set; }
 	
-	public override string ToString ()
-	{
-		return "{ LoadPattern:" + " Identifier = " + (Identifier == null ? "null" : Identifier.ToString ()) + ";" + " Tracks = " + (Tracks == null ? "null" : Tracks.ToString ()) + ";" + " }";
+	
+	public LoadPattern() {
+	}
+	
+	public override string ToString() {
+		return "{ LoadPattern:" + " Identifier = " + (Identifier == null ? "null" : Identifier.ToString()) + ";" + " Tracks = " + (Tracks == null ? "null" : Tracks.ToString()) + ";" + " }";
 	}
 }
 
 [ProtoContract]
-public class PlayPattern
-{
+public class PlayPattern {
 	[ProtoMember(1, IsRequired = true)]
 	public string Identifier { get; set; }
 	
-	[ProtoMember(2) , DefaultValue(80)]
+	[ProtoMember(2), DefaultValue(80)]
 	public int Priority { get; set; }
 	
-	public override string ToString ()
-	{
-		return "{ PlayPattern:" + " Identifier = " + (Identifier == null ? "null" : Identifier.ToString ()) + ";" + " Priority = " + (Priority == null ? "null" : Priority.ToString ()) + ";" + " }";
+	
+	public PlayPattern() {
+		Priority = 80;
+	}
+	
+	public override string ToString() {
+		return "{ PlayPattern:" + " Identifier = " + (Identifier == null ? "null" : Identifier.ToString()) + ";" + " Priority = " + (Priority == null ? "null" : Priority.ToString()) + ";" + " }";
 	}
 }
 
 [ProtoContract]
-public class Message
-{
-	public enum MessageType
-	{
+public class Message {
+	public enum MessageType {
 		Vibration = 0,
 		MuscleStimulation = 1,
 		LoadPattern = 2,
@@ -160,9 +172,12 @@ public class Message
 	[ProtoMember(5)]
 	public PlayPattern PlayPattern { get; set; }
 	
-	public override string ToString ()
-	{
-		return "{ Message:" + " Type = " + (Type == null ? "null" : Type.ToString ()) + ";" + " Vibration = " + (Vibration == null ? "null" : Vibration.ToString ()) + ";" + " MuscleStimulation = " + (MuscleStimulation == null ? "null" : MuscleStimulation.ToString ()) + ";" + " LoadPattern = " + (LoadPattern == null ? "null" : LoadPattern.ToString ()) + ";" + " PlayPattern = " + (PlayPattern == null ? "null" : PlayPattern.ToString ()) + ";" + " }";
+	
+	public Message() {
+	}
+	
+	public override string ToString() {
+		return "{ Message:" + " Type = " + (Type == null ? "null" : Type.ToString()) + ";" + " Vibration = " + (Vibration == null ? "null" : Vibration.ToString()) + ";" + " MuscleStimulation = " + (MuscleStimulation == null ? "null" : MuscleStimulation.ToString()) + ";" + " LoadPattern = " + (LoadPattern == null ? "null" : LoadPattern.ToString()) + ";" + " PlayPattern = " + (PlayPattern == null ? "null" : PlayPattern.ToString()) + ";" + " }";
 	}
 }
 
