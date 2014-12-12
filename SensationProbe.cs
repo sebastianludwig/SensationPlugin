@@ -77,8 +77,7 @@ public class SensationProbe : MonoBehaviour {
 			return;
 		}
 
-        // TODO: check if hub exists
-		if (hub.saveProfilingInformation) {
+		if (hub && hub.saveProfilingInformation) {
 			hub.profiler.Log("probe", actorIndex.ToString(), newIntensity.ToString("G20"));
 		}
 
