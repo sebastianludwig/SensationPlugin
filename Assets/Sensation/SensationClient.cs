@@ -165,7 +165,7 @@ public class SensationClient {
 						break;
 					}
 					if (profiler != null) {			// this isn't properly synchronized to spare the lock during normal operations
-						profiler.Log("client", message.ToString());
+						profiler.Log("send", message.ToString());
 					}
 					Serializer.SerializeWithLengthPrefix(networkStream, message, PrefixStyle.Fixed32BigEndian);  // this shouldn't throw anything..
 				}

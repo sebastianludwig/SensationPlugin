@@ -21,8 +21,10 @@ public class SensationHub : MonoBehaviour {
 						path += "/../..";
 					} else if (Application.platform == RuntimePlatform.WindowsPlayer) {
 						path += "/..";
+					} else if (Application.isEditor) {
+						path += "/..";
 					}
-					path += "/sensation_profile_" + DateTime.Now.ToString("yyyyddMM_HHmmss") + ".txt";
+					path += "/sensation_profile_" + DateTime.Now.ToString("yyyyMMdd_HHmm") + ".txt";
 					Debug.Log("Created profiling file at " + path);
 					_profiler = new SensationProfiler(path);
 				} catch (Exception e) {
