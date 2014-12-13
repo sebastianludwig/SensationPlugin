@@ -31,7 +31,7 @@ public class SensationProbe : MonoBehaviour {
 	public Vector3 direction = Vector3.up;
 	
 	[SerializeField]
-	public float reach = 10f;
+	public float reach = 1f;
 	
 	[SerializeField]
 	private LayerMask layerMask = -1;
