@@ -68,8 +68,12 @@ public class SensationProbe : MonoBehaviour {
 	}
 
 	IEnumerator Transmit() {
+        float zero = 0.001f;
+
 		while (true) {
-			if (updateMode == UpdateMode.OnChange && Mathf.Abs(averagedIntensity - lastTransmittedIntensity) < sensitivityInPercent / 100f) {
+            bool significantChange = float.IsNaN(lastTransmittedIntensity) || Mathf.Abs(averagedIntensity - lastTransmittedIntensity) > sensitivityInPercent / 100f;
+            bool updateToZero = lastTransmittedIntensity > zero && averagedIntensity < zero;
+			if (updateMode == UpdateMode.OnChange && !significantChange && !updateToZero) {
 				yield return null;
 				continue;
 			}
