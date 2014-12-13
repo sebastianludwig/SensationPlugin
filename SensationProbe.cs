@@ -61,7 +61,10 @@ public class SensationProbe : MonoBehaviour {
 	
 	void Awake() {
 		hub = GameObject.FindObjectOfType(typeof(SensationHub)) as SensationHub;
-		StartCoroutine(Transmit());
+	}
+
+	void Start() {
+		StartCoroutine(Transmit());	
 	}
 
 	IEnumerator Transmit() {
@@ -90,7 +93,7 @@ public class SensationProbe : MonoBehaviour {
 
 			yield return new WaitForSeconds(transmitInterval / 1000.0f);
 		}
-    }
+	}
 
 	void Update() {
 		float newIntensity = float.NaN;
