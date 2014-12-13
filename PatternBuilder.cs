@@ -16,7 +16,7 @@ public class TrackBuilder {
         private class Tangent {
             public float angleTangens = float.NaN;
             public float time = float.NaN;
-            public float intensity = float.NaN;
+            public float value = float.NaN;
 
             public float angle {
                 get {
@@ -33,7 +33,7 @@ public class TrackBuilder {
         }
 
         public float time;
-        public float intensity;
+        public float value;
         public Connection leftConnection = Connection.NotDefined;
         public Connection rightConnection = Connection.NotDefined;
 
@@ -43,16 +43,16 @@ public class TrackBuilder {
         public KeyframeBuilder previous;
         public KeyframeBuilder next;
 
-        public KeyframeBuilder(float time, float intensity, Connection leftConnection, Connection rightConnection) {
+        public KeyframeBuilder(float time, float value, Connection leftConnection, Connection rightConnection) {
             this.time = time;
-            this.intensity = intensity;
+            this.value = value;
             this.leftConnection = leftConnection;
             this.rightConnection = rightConnection;
         }
 
-        public KeyframeBuilder(float time, float intensity, float inAngle, float outAngle) {
+        public KeyframeBuilder(float time, float value, float inAngle, float outAngle) {
             this.time = time;
-            this.intensity = intensity;
+            this.value = value;
             this.inTangent = new Tangent(inAngle);
             this.outTangent = new Tangent(outAngle);
         }
@@ -69,7 +69,7 @@ public class TrackBuilder {
             // calculate tangents for straight or flat connection (tan(angle))
             if (previous != null) {
                 if (leftConnection != Connection.NotDefined) {
-                    var angleTangens = leftConnection == Connection.Flat ? 0 : (intensity - previous.intensity) / DeltaTime(previous.time, time);
+                    var angleTangens = leftConnection == Connection.Flat ? 0 : (value - previous.value) / DeltaTime(previous.time, time);
                     inTangent = new Tangent(angleTangens);
                 }
             } else {
@@ -78,7 +78,7 @@ public class TrackBuilder {
             }
             if (next != null) {
                 if (rightConnection != Connection.NotDefined) {
-                    var angleTangens = rightConnection == Connection.Flat ? 0 : (next.intensity - intensity) / DeltaTime(time, next.time);
+                    var angleTangens = rightConnection == Connection.Flat ? 0 : (next.value - value) / DeltaTime(time, next.time);
                     outTangent = new Tangent(angleTangens);
                 }
             } else {
@@ -105,32 +105,32 @@ public class TrackBuilder {
             if (inTangent != null) {
                 var tangentTime = DeltaTime(previous.time, time) / 3f;
                 inTangent.time = time - tangentTime;
-                inTangent.intensity = intensity - tangentTime * inTangent.angleTangens;
+                inTangent.value = value - tangentTime * inTangent.angleTangens;
             }
 
             if (outTangent != null) {
                 var tangentTime = DeltaTime(time, next.time) / 3f;
                 outTangent.time = time + tangentTime;
-                outTangent.intensity = intensity + tangentTime * outTangent.angleTangens;
+                outTangent.value = value + tangentTime * outTangent.angleTangens;
             }
 
             // build result
             var keyframe = new Track.Keyframe();
-            keyframe.ControlPoint = BuildPoint(time, intensity);
+            keyframe.ControlPoint = BuildPoint(time, value);
             if (inTangent != null) {
-                keyframe.InTangentStart = BuildPoint(inTangent.time, inTangent.intensity);
+                keyframe.InTangentStart = BuildPoint(inTangent.time, inTangent.value);
             }
             if (outTangent != null) {
-                keyframe.OutTangentEnd = BuildPoint(outTangent.time, outTangent.intensity);
+                keyframe.OutTangentEnd = BuildPoint(outTangent.time, outTangent.value);
             }
 
             return keyframe;
         }
 
-        private Track.Keyframe.Point BuildPoint(float time, float intensity) {
+        private Track.Keyframe.Point BuildPoint(float time, float value) {
             var point = new Track.Keyframe.Point();
             point.Time = time;
-            point.Value = intensity;
+            point.Value = value;
             return point;
         }
     }
@@ -145,20 +145,20 @@ public class TrackBuilder {
         this.actorIndex = actorIndex;
     }
 
-    public TrackBuilder AddKeyframe(float time, float intensity) {
-        return AddKeyframe(time, intensity, Connection.Smooth);
+    public TrackBuilder AddKeyframe(float time, float value) {
+        return AddKeyframe(time, value, Connection.Smooth);
     }
 
-    public TrackBuilder AddKeyframe(float time, float intensity, Connection connection) {
-        return AddKeyframe(time, intensity, connection, connection);
+    public TrackBuilder AddKeyframe(float time, float value, Connection connection) {
+        return AddKeyframe(time, value, connection, connection);
     }
 
-    public TrackBuilder AddKeyframe(float time, float intensity, Connection leftConnection, Connection rightConnection) {
-        return AddKeyframeBuilder(new KeyframeBuilder(time, intensity, leftConnection, rightConnection));
+    public TrackBuilder AddKeyframe(float time, float value, Connection leftConnection, Connection rightConnection) {
+        return AddKeyframeBuilder(new KeyframeBuilder(time, value, leftConnection, rightConnection));
     }
 
-    public TrackBuilder AddKeyframe(float time, float intensity, float inAngle, float outAngle) {
-        return AddKeyframeBuilder(new KeyframeBuilder(time, intensity, inAngle, outAngle));
+    public TrackBuilder AddKeyframe(float time, float value, float inAngle, float outAngle) {
+        return AddKeyframeBuilder(new KeyframeBuilder(time, value, inAngle, outAngle));
     }
 
     private TrackBuilder AddKeyframeBuilder(KeyframeBuilder builder) {
