@@ -11,7 +11,7 @@ using ProtoBuf;
 namespace Sensation {
 
 [CustomEditor(typeof(Patterns))]
-public class PatternsEditor : Editor {
+public class PatternEditor : Editor {
     private static String MakeRelativePath(string fromPath, string toPath) {
         if (string.IsNullOrEmpty(fromPath)) throw new ArgumentNullException("fromPath");
         if (string.IsNullOrEmpty(toPath))   throw new ArgumentNullException("toPath");
