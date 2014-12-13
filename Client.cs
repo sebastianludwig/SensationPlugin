@@ -6,14 +6,16 @@ using System.Net;
 using System.Net.Sockets;
 using ProtoBuf;
 
-public delegate void SensationClientExceptionDelegate(Exception e);
+namespace Sensation {
+
+public delegate void ClientExceptionDelegate(Exception e);
 
 /**
  * The actual transmission over the network is handled in a background thread. Therefore
  * any exceptions can't be reported directly and will be reported to any registered
  * exception handlers. Be careful, they will NOT be called on the main thread!
  **/
-public class SensationClient {
+public class Client {
 	private ConcurrentQueue<Message> messageQueue = new ConcurrentQueue<Message>();
 	
 	private Thread transmitThread;
@@ -22,17 +24,17 @@ public class SensationClient {
 	private bool shouldStopTransmitting = false;
 	private readonly object shouldStopTransmittingLock = new object();
 	
-	private SensationClientExceptionDelegate exceptionDelegate;
+	private ClientExceptionDelegate exceptionDelegate;
 
-	public SensationProfiler profiler;
+	public Profiler profiler;
 	
 	#region Singleton
 	// singleton implemenation following http://csharpindepth.com/articles/general/singleton.aspx
-	public static readonly SensationClient Instance = new SensationClient();
+	public static readonly Client Instance = new Client();
 
-	static SensationClient() {}
+	static Client() {}
 
-	private SensationClient() {
+	private Client() {
 	}
 	#endregion
 	
@@ -51,7 +53,7 @@ public class SensationClient {
 	  * 	An error was encountered when resolving the hsotname
 	  * 	An error occured when accessing the socket
 	**/
-	public void AddExceptionDelegate(SensationClientExceptionDelegate exceptionDelegate) {
+	public void AddExceptionDelegate(ClientExceptionDelegate exceptionDelegate) {
 		if (this.exceptionDelegate == null) {
 			this.exceptionDelegate = exceptionDelegate;
 		} else {
@@ -175,4 +177,6 @@ public class SensationClient {
 		}
 	}
 	#endregion
+}
+
 }

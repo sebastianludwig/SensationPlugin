@@ -7,8 +7,11 @@ using System.Collections.Generic;
 using System.IO;
 using ProtoBuf;
 
-[CustomEditor(typeof(SensationPatterns))]
-public class SensationPatternsEditor : Editor {
+
+namespace Sensation {
+
+[CustomEditor(typeof(Patterns))]
+public class PatternsEditor : Editor {
 	private static String MakeRelativePath(string fromPath, string toPath) {
 		if (string.IsNullOrEmpty(fromPath)) throw new ArgumentNullException("fromPath");
 		if (string.IsNullOrEmpty(toPath))   throw new ArgumentNullException("toPath");
@@ -33,12 +36,12 @@ public class SensationPatternsEditor : Editor {
 		return Path.GetDirectoryName(Application.dataPath);
 	}
 
-	private SensationPatterns patterns;
+	private Patterns patterns;
 
 	private string newPatternName;
 
 	void OnEnable() {
-		patterns = (SensationPatterns)target;
+		patterns = (Patterns)target;
 	}
 
 	private void CreateNewPattern(string name) {
@@ -58,8 +61,8 @@ public class SensationPatternsEditor : Editor {
 	}
 
 	private Track SerializeCurve(AnimationClipCurveData curve) {
-		SensationPatterns.ActorLocation location;
-		if (!SensationPatterns.propertyMappings.TryGetValue(curve.propertyName, out location)) {
+		Patterns.ActorLocation location;
+		if (!Patterns.propertyMappings.TryGetValue(curve.propertyName, out location)) {
 			throw new ArgumentException("No actor mapping found for " + curve.propertyName);
 		}
 
@@ -172,4 +175,6 @@ public class SensationPatternsEditor : Editor {
 			Export();
 		}
 	}
+}
+
 }

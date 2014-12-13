@@ -6,6 +6,8 @@ using System.ComponentModel;
 #pragma warning disable 0429
 #pragma warning disable 0472
 
+namespace Sensation {
+	
 [ProtoContract]
 public class Vibration {
 	public enum Region {
@@ -179,6 +181,8 @@ public class Message {
 	public override string ToString() {
 		return "{ Message:" + " Type = " + (Type == null ? "null" : Type.ToString()) + ";" + " Vibration = " + (Vibration == null ? "null" : Vibration.ToString()) + ";" + " MuscleStimulation = " + (MuscleStimulation == null ? "null" : MuscleStimulation.ToString()) + ";" + " LoadPattern = " + (LoadPattern == null ? "null" : LoadPattern.ToString()) + ";" + " PlayPattern = " + (PlayPattern == null ? "null" : PlayPattern.ToString()) + ";" + " }";
 	}
+}
+
 }
 
 

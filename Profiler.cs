@@ -3,7 +3,9 @@ using System.IO;
 using System.Threading;
 using System.Collections;
 
-public class SensationProfiler {
+namespace Sensation {
+
+public class Profiler {
 	private static readonly long epochTicks = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).Ticks;
 
 	private ConcurrentQueue<string> entries = new ConcurrentQueue<string>();
@@ -16,7 +18,7 @@ public class SensationProfiler {
 
 	private string logPath;
 
-	public SensationProfiler(string logPath) {
+	public Profiler(string logPath) {
 		this.logPath = logPath;
 
 		lock (shouldStopWritingLock) {
@@ -25,7 +27,7 @@ public class SensationProfiler {
 		writingThread = new Thread(WriteLog);
 		writingThread.IsBackground = true;		// don't keep the application alive
 		writingThread.Priority = ThreadPriority.Lowest;
-		writingThread.Start("SensationProfiler background logger");
+		writingThread.Start("Sensation.Profiler background logger");
 	}
 
 	public void Log(string action, params string[] text) {
@@ -69,4 +71,6 @@ public class SensationProfiler {
 
 		writer.Close();
 	}
+}
+
 }

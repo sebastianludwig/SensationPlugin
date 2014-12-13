@@ -3,8 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
+
+namespace Sensation {
+
 [RequireComponent(typeof(Animation))]
-public class SensationPatterns : MonoBehaviour {
+public class Patterns : MonoBehaviour {
 	public float chest_upperLeftCenter;
 	public float chest_upperFarLeft;
 	public float chest_middleLeftCenter;
@@ -95,7 +98,7 @@ public class SensationPatterns : MonoBehaviour {
 	public float rightLeg_lowerShankBack;
 
 
-	static SensationPatterns() {
+	static Patterns() {
 		propertyMappings["chest_upperLeftCenter"] = new ActorLocation(Vibration.Region.Chest, 2);
 		propertyMappings["chest_upperFarLeft"] = new ActorLocation(Vibration.Region.Chest, 3);
 		propertyMappings["chest_middleLeftCenter"] = new ActorLocation(Vibration.Region.Chest, 6);
@@ -238,4 +241,6 @@ public class SensationPatterns : MonoBehaviour {
 		}
 		return true;
 	}
+}
+
 }

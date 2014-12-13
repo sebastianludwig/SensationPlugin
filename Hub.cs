@@ -3,7 +3,9 @@ using System;
 using System.IO;
 using ProtoBuf;
 
-public class SensationHub : MonoBehaviour {
+namespace Sensation {
+
+public class Hub : MonoBehaviour {
 
 	[SerializeField]
 	private string sensationDriverNetworkName = "sensationdriver.local";
@@ -11,8 +13,8 @@ public class SensationHub : MonoBehaviour {
 	[SerializeField]
 	public bool saveProfilingInformation = false;
 
-	private SensationProfiler _profiler;
-	public SensationProfiler profiler {
+	private Profiler _profiler;
+	public Profiler profiler {
 		get { 
 			if (_profiler == null) {
 				try {
@@ -26,7 +28,7 @@ public class SensationHub : MonoBehaviour {
 					}
 					path += "/sensation_profile_" + DateTime.Now.ToString("yyyyMMdd_HHmm") + ".txt";
 					Debug.Log("Created profiling file at " + path);
-					_profiler = new SensationProfiler(path);
+					_profiler = new Profiler(path);
 				} catch (Exception e) {
 					Debug.LogError("Could not create sensation profiling file - disabling profiling.");
 					Debug.LogException(e);
@@ -38,13 +40,13 @@ public class SensationHub : MonoBehaviour {
 
 	void OnValidate() {
 		if (Application.isPlaying) {
-			SensationClient.Instance.profiler = saveProfilingInformation ? profiler : null;
+			Client.Instance.profiler = saveProfilingInformation ? profiler : null;
 		}
 	}
 	
     void Awake() {
-		SensationClient.Instance.AddExceptionDelegate(OnClientException);
-		SensationClient.Instance.Connect(sensationDriverNetworkName);
+		Client.Instance.AddExceptionDelegate(OnClientException);
+		Client.Instance.Connect(sensationDriverNetworkName);
     }
 
 	private void OnClientException(Exception e) {
@@ -52,7 +54,7 @@ public class SensationHub : MonoBehaviour {
 	}
 	
 	void OnDestroy() {
-		SensationClient.Instance.Disconnect();
+		Client.Instance.Disconnect();
 		if (_profiler != null) {
 			_profiler.Close();
 		}
@@ -61,7 +63,7 @@ public class SensationHub : MonoBehaviour {
 	public void LoadPattern(TextAsset serialized) {
 		LoadPattern message = Serializer.Deserialize<LoadPattern>(new MemoryStream(serialized.bytes));
 
-		SensationClient.Instance.SendAsync(message);
+		Client.Instance.SendAsync(message);
 	}
 	
 	public void PlayPattern(string identifier, int priority = 80) {
@@ -69,6 +71,8 @@ public class SensationHub : MonoBehaviour {
 		message.Identifier = identifier;
 		message.Priority = priority;
 
-		SensationClient.Instance.SendAsync(message);
+		Client.Instance.SendAsync(message);
 	}
+}
+
 }

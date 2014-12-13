@@ -5,12 +5,14 @@ using System.Collections;
 
 // Note: Random Cone rays: var coneRandomRotation = Quaternion.Euler (Random.Range (-coneAngle, coneAngle), Random.Range (-coneAngle, coneAngle), 0);
 
-public class SensationProbe : MonoBehaviour {
+namespace Sensation {
+
+public class Probe : MonoBehaviour {
 	public enum OutOfReachValue { Off, EvaluateZero, EvaluateOne }
 	public enum UpdateMode { Continuous, OnChange }
 	
 	static Keyframe[] initialIntensityKeyframes;
-	static SensationProbe() {
+	static Probe() {
 		initialIntensityKeyframes = new Keyframe[2];
 		initialIntensityKeyframes[0] = new Keyframe(0, 1);
 		initialIntensityKeyframes[0].outTangent = Mathf.Tan(Mathf.Deg2Rad * -45f);
@@ -57,10 +59,10 @@ public class SensationProbe : MonoBehaviour {
 
 	private float averagedIntensity = 0;
 	private float lastTransmittedIntensity = float.NaN;
-	private SensationHub hub;
+	private Hub hub;
 	
 	void Awake() {
-		hub = GameObject.FindObjectOfType(typeof(SensationHub)) as SensationHub;
+		hub = GameObject.FindObjectOfType(typeof(Hub)) as Hub;
 	}
 
 	void Start() {
@@ -87,7 +89,7 @@ public class SensationProbe : MonoBehaviour {
 			vibration.TargetRegion = region;
 			vibration.Intensity = averagedIntensity;
 
-			SensationClient.Instance.SendAsync(vibration);
+			Client.Instance.SendAsync(vibration);
 			
 			lastTransmittedIntensity = averagedIntensity;
 
@@ -125,4 +127,6 @@ public class SensationProbe : MonoBehaviour {
 		smoothingFactor = Mathf.Clamp01(smoothingFactor);
 		averagedIntensity = smoothingFactor * newIntensity + (1 - smoothingFactor) * averagedIntensity;
 	}
+}
+
 }

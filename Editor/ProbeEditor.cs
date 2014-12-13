@@ -3,13 +3,15 @@ using UnityEditor;
 using System;
 using System.Collections;
 
-[CustomEditor(typeof(SensationProbe))]
+namespace Sensation {
+
+[CustomEditor(typeof(Probe))]
 [CanEditMultipleObjects]
-public class SensationProbeEditor : Editor {
-	private SensationProbe probe;
+public class ProbeEditor : Editor {
+	private Probe probe;
 	
 	void OnEnable() {
-		probe = (SensationProbe)target;
+		probe = (Probe)target;
 	}
 	
 	public override void OnInspectorGUI() {
@@ -17,7 +19,7 @@ public class SensationProbeEditor : Editor {
 	}
 	
 	[DrawGizmo(GizmoType.Selected)]
-	static void SelectedGizmos(SensationProbe probe, GizmoType gizmoType) {
+	static void SelectedGizmos(Probe probe, GizmoType gizmoType) {
 		Vector3 worldOrigin = probe.transform.TransformPoint(probe.origin);
 		Vector3 worldDirection = probe.transform.localToWorldMatrix * (probe.direction.normalized * probe.reach);
 		Vector3 worldTarget = worldOrigin + worldDirection;
@@ -77,7 +79,7 @@ public class SensationProbeEditor : Editor {
 		}
 	}
 
-	private void SetDirection(SensationProbe probe, Vector3 worldOrigin, Vector3 worldTarget) {
+	private void SetDirection(Probe probe, Vector3 worldOrigin, Vector3 worldTarget) {
 		Vector3 newDirection = worldTarget - worldOrigin;
 		newDirection = probe.transform.worldToLocalMatrix * newDirection;
 		
@@ -86,4 +88,6 @@ public class SensationProbeEditor : Editor {
 		newDirection.Normalize();
 		probe.direction = new Vector3((float)Math.Round(newDirection.x, 4), (float)Math.Round(newDirection.y, 4), (float)Math.Round(newDirection.z, 4));
 	}
+}
+
 }
