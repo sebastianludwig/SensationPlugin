@@ -60,66 +60,25 @@ public class PatternsEditor : Editor {
         patterns.AddPattern(pattern, name);
     }
 
-    private Track SerializeCurve(AnimationClipCurveData curve) {
-        Patterns.ActorLocation location;
-        if (!Patterns.propertyMappings.TryGetValue(curve.propertyName, out location)) {
-            throw new ArgumentException("No actor mapping found for " + curve.propertyName);
-        }
+    private LoadPattern Serialize(AnimationClip pattern) {
+        PatternBuilder patternBuilder = new PatternBuilder(pattern.name);
 
-        Track track = new Track();
-        track.TargetRegion = location.Region;
-        track.ActorIndex = location.Index;
-
-        var keyframes = new List<Track.Keyframe>();
-
-        AnimationCurve curveKeys = curve.curve;
-        for (int i = 1; i < curveKeys.length; ++i) {
-            Track.Keyframe start;
-            if (keyframes.Any()) {
-                start = keyframes.Last();
-            } else {
-                start = new Track.Keyframe();
-                start.ControlPoint = new Track.Keyframe.Point();
-                start.ControlPoint.Time = curveKeys[0].time;
-                start.ControlPoint.Value = curveKeys[0].value;
-
-                keyframes.Add(start);
+        foreach (var curve in AnimationUtility.GetAllCurves(pattern)) {
+            Patterns.ActorLocation location;
+            if (!Patterns.propertyMappings.TryGetValue(curve.propertyName, out location)) {
+                throw new ArgumentException("No actor mapping found for " + curve.propertyName);
             }
 
-            Track.Keyframe end = new Track.Keyframe();
-            end.ControlPoint = new Track.Keyframe.Point();;
-            end.ControlPoint.Time = curveKeys[i].time;
-            end.ControlPoint.Value = curveKeys[i].value;
+            var track = patternBuilder.AddTrack(location.Region, location.Index);
 
-            float tangentTime = Mathf.Abs(end.ControlPoint.Time - start.ControlPoint.Time) / 3f;
+            AnimationCurve curveKeys = curve.curve;
+            for (int i = 0; i < curveKeys.length; ++i) {
+                track.AddKeyframe(curveKeys[i].time, curveKeys[i].value, curveKeys[i].inTangent, curveKeys[i].outTangent);
 
-            start.OutTangentEnd = new Track.Keyframe.Point();
-            start.OutTangentEnd.Time = start.ControlPoint.Time + tangentTime;
-            start.OutTangentEnd.Value = start.ControlPoint.Value + tangentTime * curveKeys[i - 1].outTangent;
-
-            end.InTangentStart = new Track.Keyframe.Point();
-            end.InTangentStart.Time = end.ControlPoint.Time - tangentTime;
-            end.InTangentStart.Value = end.ControlPoint.Value - tangentTime * curveKeys[i].inTangent;
-
-            keyframes.Add(end);
+            }
         }
 
-        track.Keyframes = keyframes.ToArray();
-
-        return track;
-    }
-
-    private LoadPattern Serialize(AnimationClip pattern) {
-        var tracks = new List<Track>();
-        AnimationClipCurveData[] curves = AnimationUtility.GetAllCurves(pattern);
-        foreach (var curve in curves) {
-            tracks.Add(SerializeCurve(curve));
-        }
-
-        var message = new LoadPattern();
-        message.Identifier = pattern.name;
-        message.Tracks = tracks.ToArray();
-        return message;
+        return patternBuilder.Build();
     }
     
     private void Export() {
@@ -130,7 +89,7 @@ public class PatternsEditor : Editor {
 
         foreach (var pattern in patterns.GetActivePatterns()) {
             LoadPattern message = Serialize(pattern);
-            
+
             using (var outputStream = File.Create(Path.Combine(path, pattern.name + ".bytes"))) {
                 Serializer.Serialize(outputStream, message);
             }
