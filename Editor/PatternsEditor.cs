@@ -130,20 +130,7 @@ public class PatternsEditor : Editor {
 
         foreach (var pattern in patterns.GetActivePatterns()) {
             LoadPattern message = Serialize(pattern);
-//          Debug.Log(message.Identifier);
-//          foreach (var track in message.Tracks) {
-//              Debug.Log(track.Region + " - " + track.ActorIndex);
-//              foreach (var keyframe in track.Keyframes) {
-//                  Debug.Log("-----------------");
-//                  if (keyframe.InTangentStart != null) {
-//                      Debug.Log("InT: " + keyframe.InTangentStart.Time + " - " + keyframe.InTangentStart.Value);
-//                  }
-//                  Debug.Log(keyframe.ControlPoint.Time + " - " + keyframe.ControlPoint.Value);
-//                  if (keyframe.OutTangentEnd != null) {
-//                      Debug.Log("OutT: " + keyframe.OutTangentEnd.Time + " - " + keyframe.OutTangentEnd.Value);
-//                  }
-//              }
-//          }
+            
             using (var outputStream = File.Create(Path.Combine(path, pattern.name + ".bytes"))) {
                 Serializer.Serialize(outputStream, message);
             }
