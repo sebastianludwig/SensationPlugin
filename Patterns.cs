@@ -206,7 +206,7 @@ public class Patterns : MonoBehaviour {
 
     private List<AnimationClip> GetPatterns() {
         var patterns = new List<AnimationClip>();
-        foreach (AnimationState state in animation) {
+        foreach (AnimationState state in GetComponent<Animation>()) {
             if (!state.clip) {
                 continue;
             }
@@ -226,7 +226,7 @@ public class Patterns : MonoBehaviour {
     }
 
     public void AddPattern(AnimationClip clip, string name) {
-        animation.AddClip(clip, name);
+        GetComponent<Animation>().AddClip(clip, name);
         patternSelections[name] = true;
     }
 

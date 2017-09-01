@@ -46,6 +46,7 @@ public class PatternEditor : Editor {
 
     private void CreateNewPattern(string name) {
         AnimationClip pattern = new AnimationClip();
+        pattern.legacy = true;
 
         string path = EditorUtility.SaveFilePanel("Save pattern", Application.dataPath, name + ".anim", "anim");
         if (path.Length == 0) {

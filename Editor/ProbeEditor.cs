@@ -30,7 +30,7 @@ public class ProbeEditor : Editor {
         Handles.color = Color.cyan;
         Quaternion rotation = Quaternion.FromToRotation(Vector3.forward, worldDirection.normalized);
         float size = HandleUtility.GetHandleSize(worldTarget) * 0.15f;
-        Handles.ConeCap(0, worldTarget - size * 0.5f * worldDirection.normalized, rotation, size);
+        Handles.ConeHandleCap(0, worldTarget - size * 0.5f * worldDirection.normalized, rotation, size, Event.current.type);
 
         if (Event.current.shift) {
             Color color = Handles.color;
